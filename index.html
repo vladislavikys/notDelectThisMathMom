@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Математика для детей 🧮</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --accent: #ff7a59;
+    --accent2:#ff5e7e;
+    --green: #2ecc71;
+    --green2:#27ae60;
+    --red: #ff5a5f;
+    --purple: #7c5cff;
+    --purple2:#9d7bff;
+    --ink: #3a3a5a;
+    --muted:#9aa3b8;
+    --card-r: 30px;
+  }
+  html, body {
+    margin: 0; padding: 0; min-height: 100%;
+    font-family: 'Fredoka', 'Segoe UI', system-ui, sans-serif;
+    color: var(--ink);
+    user-select: none;
+    background: linear-gradient(160deg, #a18cd1 0%, #6dd5fa 55%, #2980ff 100%);
+    overflow-x: hidden;
+  }
+  .blob { position: fixed; border-radius: 50%; filter: blur(4px); opacity: .35; z-index: 0; pointer-events:none; animation: float 9s ease-in-out infinite; }
+  .b1 { width:160px;height:160px; background:#ffd36e; top:6%; left:-40px; animation-delay:0s;}
+  .b2 { width:120px;height:120px; background:#ff8fb1; top:70%; right:-30px; animation-delay:1.5s;}
+  .b3 { width:90px;height:90px; background:#7afcff; top:18%; right:8%; animation-delay:3s;}
+  .b4 { width:70px;height:70px; background:#b9ffb0; bottom:8%; left:8%; animation-delay:2s;}
+  @keyframes float { 0%,100%{ transform: translateY(0) rotate(0deg);} 50%{ transform: translateY(-26px) rotate(12deg);} }
+
+  #app {
+    position: relative; z-index: 1;
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 18px;
+  }
+  .card {
+    position: relative;
+    background: rgba(255,255,255,.96);
+    backdrop-filter: blur(6px);
+    border-radius: var(--card-r);
+    box-shadow: 0 24px 60px rgba(40,30,90,.35), inset 0 0 0 2px rgba(255,255,255,.6);
+    width: 100%; max-width: 440px;
+    padding: 26px 22px 28px;
+    animation: pop .4s cubic-bezier(.2,1.3,.5,1);
+  }
+  @keyframes pop { from { transform: scale(.9) translateY(14px); opacity: 0 } to { transform: scale(1) translateY(0); opacity: 1 } }
+
+  .title {
+    text-align: center; margin: 2px 0 6px;
+    font-family:'Baloo 2', sans-serif; font-weight:800; font-size: 30px;
+    background: linear-gradient(90deg, var(--purple), var(--accent2));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .subtitle { text-align:center; color:var(--muted); font-size:15px; margin:0 0 6px; }
+  h2 { text-align: center; margin: 0 0 6px; font-family:'Baloo 2'; font-weight:800; font-size: 26px; }
+
+  .label { font-size: 16px; font-weight: 600; margin: 20px 0 10px; display:flex; align-items:center; gap:6px; color:var(--ink); }
+  .label small { color:var(--muted); font-weight:500; font-size:13px; }
+
+  .grid { display: grid; gap: 10px; }
+  .ops { grid-template-columns: repeat(4, 1fr); }
+  .counts { grid-template-columns: repeat(4, 1fr); }
+  .range { grid-template-columns: repeat(3, 1fr); }
+
+  .chip {
+    position: relative;
+    border: 2px solid #e7ebf5;
+    background: #f6f8fd;
+    border-radius: 20px;
+    padding: 16px 0;
+    font-size: 27px; font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    color: var(--ink);
+    transition: transform .12s cubic-bezier(.2,1.4,.4,1), background .18s, border-color .18s, color .18s, box-shadow .18s;
+  }
+  .chip.small { font-size: 19px; padding: 13px 0; }
+  .chip:hover { border-color:#cdd6ec; }
+  .chip:active { transform: scale(.9); }
+  .chip.on {
+    color: #fff; border-color: transparent;
+    background: linear-gradient(135deg, var(--purple), var(--purple2));
+    box-shadow: 0 8px 18px rgba(124,92,255,.45);
+    transform: translateY(-2px);
+  }
+  .chip.on::after { content:"✓"; position:absolute; top:5px; right:8px; font-size:12px; opacity:.85; }
+  .chip.small.on::after, .range .chip.on::after { content:""; }
+  @keyframes nope { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+  .chip.nope { animation: nope .35s; }
+
+  /* настройки учителя */
+  .teacher-toggle {
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    margin-top:18px; cursor:pointer; color:var(--purple); font-weight:600; font-size:15px;
+    padding:10px; border-radius:14px; background:#f3f0ff; border:2px dashed #d9d0ff;
+  }
+  .teacher-toggle .arr { transition: transform .25s; }
+  .teacher-toggle.open .arr { transform: rotate(180deg); }
+  .teacher-panel { overflow:hidden; max-height:0; transition: max-height .35s ease; }
+  .teacher-panel.open { max-height:600px; }
+  .switch-row {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:13px 14px; background:#f6f8fd; border-radius:16px; margin-top:10px;
+  }
+  .switch-row .txt { font-size:15px; font-weight:600; }
+  .switch-row .txt small { display:block; color:var(--muted); font-weight:500; font-size:12px; }
+  .switch {
+    flex:0 0 auto; width:52px; height:30px; border-radius:999px; background:#d3dbef;
+    position:relative; cursor:pointer; transition:background .2s;
+  }
+  .switch::after {
+    content:""; position:absolute; top:3px; left:3px; width:24px; height:24px;
+    border-radius:50%; background:#fff; box-shadow:0 2px 4px rgba(0,0,0,.2); transition:left .2s;
+  }
+  .switch.on { background: var(--green); }
+  .switch.on::after { left:25px; }
+  .switch.disabled { opacity:.4; pointer-events:none; }
+
+  .big-btn {
+    width: 100%; border: none; cursor: pointer; font-family:'Baloo 2', sans-serif;
+    background: linear-gradient(120deg, var(--accent), var(--accent2));
+    color: #fff; font-size: 23px; font-weight: 700;
+    padding: 17px; border-radius: 22px; margin-top: 26px;
+    box-shadow: 0 12px 24px rgba(255,94,126,.5), 0 4px 0 #d94767;
+    transition: transform .1s, box-shadow .1s;
+  }
+  .big-btn:active { transform: translateY(4px); box-shadow: 0 6px 14px rgba(255,94,126,.4), 0 0 0 #d94767; }
+  .big-btn.green { background: linear-gradient(120deg,var(--green),var(--green2)); box-shadow:0 12px 24px rgba(46,204,113,.45), 0 4px 0 #1e8e4f; }
+  .big-btn.green:active { box-shadow:0 6px 14px rgba(46,204,113,.4), 0 0 0 #1e8e4f; }
+
+  /* кнопка закрытия теста */
+  .close-btn {
+    position:absolute; top:14px; right:14px; z-index:5;
+    width:40px; height:40px; border:none; cursor:pointer;
+    border-radius:50%; background:#fff0f0; color:var(--red);
+    font-size:22px; font-weight:700; line-height:1;
+    box-shadow:0 4px 0 #ffd0d0; transition:transform .08s, box-shadow .08s;
+    font-family:'Baloo 2';
+  }
+  .close-btn:hover { background:#ffe3e3; }
+  .close-btn:active { transform:translateY(4px); box-shadow:0 0 0 #ffd0d0; }
+
+  /* game */
+  .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; padding-right:46px; }
+  .pill { background:#eef2fb; color:var(--muted); font-weight:600; font-size:13px; padding:6px 12px; border-radius:999px; }
+  .hearts { font-size:22px; letter-spacing:3px; }
+  .pbar { height:8px; background:#eef2fb; border-radius:999px; overflow:hidden; margin-bottom:18px; }
+  .pbar > i { display:block; height:100%; border-radius:999px; background:linear-gradient(90deg,var(--purple),var(--accent2)); transition:width .4s cubic-bezier(.4,1.3,.5,1); }
+
+  .question {
+    text-align: center; font-family:'Baloo 2'; font-weight:800; font-size: 54px;
+    margin: 4px 0 14px; color: var(--ink);
+    animation: qin .35s ease;
+  }
+  @keyframes qin { from{opacity:0; transform:translateY(10px) scale(.96);} to{opacity:1; transform:none;} }
+  .answer-box {
+    text-align: center; font-family:'Baloo 2'; font-size: 42px; font-weight: 800;
+    min-height: 70px; line-height: 70px;
+    border: 3px dashed #d3dbef; border-radius: 18px;
+    margin-bottom: 8px; color: var(--purple);
+    transition: border-color .2s, background .2s, color .2s;
+  }
+  .answer-box.ok  { border-style:solid; border-color: var(--green); background:#e9fdf1; color: var(--green); animation: bounce .45s; }
+  .answer-box.bad { border-style:solid; border-color: var(--red); background:#fff0f0; color: var(--red); animation: shake .4s; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-12px)} 60%{transform:translateX(12px)} }
+  @keyframes bounce { 0%{transform:scale(1)} 40%{transform:scale(1.12)} 100%{transform:scale(1)} }
+  .feedback { text-align:center; min-height:26px; font-size:18px; font-weight:600; margin-bottom:12px; }
+  .feedback.ok { color: var(--green); }
+  .feedback.bad { color: var(--red); }
+
+  .pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .key {
+    border: none; cursor: pointer; font-family:'Baloo 2', sans-serif;
+    background: #fff; color: var(--ink);
+    font-size: 28px; font-weight: 700;
+    padding: 16px 0; border-radius: 18px;
+    box-shadow: 0 5px 0 #dfe5f3, 0 7px 12px rgba(60,60,120,.12);
+    transition: transform .08s, box-shadow .08s, background .12s;
+  }
+  .key:hover { background:#f7f9ff; }
+  .key:active { transform: translateY(5px); box-shadow: 0 0 0 #dfe5f3; }
+  .key.del   { background:#fff0ea; color:#e8590c; box-shadow:0 5px 0 #ffd3c2, 0 7px 12px rgba(232,89,12,.15);}
+  .key.del:active { box-shadow:0 0 0 #ffd3c2; }
+  .key.enter { background: linear-gradient(135deg,var(--green),var(--green2)); color:#fff; box-shadow:0 5px 0 #1e8e4f, 0 7px 12px rgba(46,204,113,.3); }
+  .key.enter:active { box-shadow:0 0 0 #1e8e4f; }
+  .key.sign { background:#f0ecff; color:var(--purple); box-shadow:0 5px 0 #d9d0ff, 0 7px 12px rgba(124,92,255,.15); }
+  .key.sign:active { box-shadow:0 0 0 #d9d0ff; }
+
+  /* results */
+  .mascot { text-align:center; font-size:60px; margin-top:2px; animation: bob 1.6s ease-in-out infinite; }
+  @keyframes bob { 0%,100%{transform:translateY(0) rotate(-3deg)} 50%{transform:translateY(-10px) rotate(3deg)} }
+  .ring-wrap { display:flex; justify-content:center; margin:6px 0 12px; }
+  .ring-wrap svg { transform: rotate(-90deg); }
+  .ring-bg { fill:none; stroke:#eef2fb; stroke-width:14; }
+  .ring-fg { fill:none; stroke-width:14; stroke-linecap:round; transition: stroke-dashoffset 1.1s cubic-bezier(.3,1,.4,1); }
+  .ring-text { transform: rotate(90deg); }
+  .pct-num { font-family:'Baloo 2'; font-weight:800; font-size:40px; }
+  .stat-row { display:flex; gap:10px; margin:4px 0 10px; }
+  .stat { flex:1; background:#f6f8fd; border-radius:16px; padding:12px; text-align:center; }
+  .stat b { display:block; font-family:'Baloo 2'; font-size:24px; }
+  .stat span { font-size:12px; color:var(--muted); }
+  .stat.good b { color:var(--green); }
+  .stat.bad b { color:var(--red); }
+
+  .history { max-height: 230px; overflow-y: auto; margin-top: 6px; padding-right:4px; }
+  .history::-webkit-scrollbar { width:6px; }
+  .history::-webkit-scrollbar-thumb { background:#d3dbef; border-radius:999px; }
+  .hrow {
+    display:flex; align-items:center; gap:10px;
+    padding:10px 12px; border-radius:14px; margin-bottom:8px;
+    background:#f6f8fd; font-size:17px;
+    animation: rowin .3s ease both;
+  }
+  @keyframes rowin { from{opacity:0; transform:translateX(-8px);} to{opacity:1; transform:none;} }
+  .hrow .res { font-size:20px; }
+  .hrow.ok  { background:#e9fdf1; }
+  .hrow.bad { background:#fff0f0; }
+  .hrow .expr { font-weight:600; flex:1; }
+  .hrow .got { font-size:13px; color:var(--muted); text-align:right; }
+  .hrow .got b.wrong { color: var(--red); text-decoration: line-through; }
+  .hrow .got b.right { color: var(--green); }
+
+  .confetti { position:fixed; top:-10px; width:10px; height:14px; z-index:50; pointer-events:none; border-radius:2px; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(105vh) rotate(720deg); opacity:.9; } }
+
+  /* модалка подтверждения выхода */
+  .overlay { position:fixed; inset:0; z-index:60; background:rgba(40,30,90,.45); display:flex; align-items:center; justify-content:center; padding:20px; animation:fadein .2s ease; }
+  @keyframes fadein { from{opacity:0} to{opacity:1} }
+  .modal { background:#fff; border-radius:24px; padding:24px; max-width:330px; width:100%; text-align:center; box-shadow:0 20px 50px rgba(0,0,0,.3); animation:pop .3s cubic-bezier(.2,1.3,.5,1); }
+  .modal h3 { font-family:'Baloo 2'; margin:6px 0 6px; font-size:21px; }
+  .modal p { color:var(--muted); font-size:14px; margin:0 0 18px; }
+  .modal-btns { display:flex; gap:10px; }
+  .mbtn { flex:1; border:none; cursor:pointer; font-family:'Baloo 2'; font-weight:700; font-size:16px; padding:14px; border-radius:16px; }
+  .mbtn.stay { background:#eef2fb; color:var(--ink); }
+  .mbtn.leave { background:linear-gradient(120deg,var(--red),#e0383d); color:#fff; }
+
+  /* экран входа по коду */
+  .code-input {
+    display:block; width:100%; margin:18px 0 10px; text-align:center;
+    font-family:'Baloo 2'; font-weight:800; font-size:38px; letter-spacing:8px;
+    text-transform:uppercase; color:var(--purple);
+    border:3px dashed #d3dbef; border-radius:18px; padding:14px 10px;
+    outline:none; background:#f6f8fd; transition:border-color .2s;
+  }
+  .code-input:focus { border-color:var(--purple); border-style:solid; background:#fff; }
+  .code-input::placeholder { color:#c5cde0; letter-spacing:6px; }
+  .gate-msg { text-align:center; min-height:24px; color:var(--red); font-size:15px; font-weight:600; margin-bottom:4px; }
+  .logout { color:var(--purple); font-size:13px; text-decoration:none; border-bottom:1px dashed var(--purple); margin-left:6px; }
+  .spinner {
+    width:46px; height:46px; margin:22px auto; border-radius:50%;
+    border:5px solid #e7ebf5; border-top-color:var(--purple); animation:spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="blob b4"></div>
+<div id="app"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var OPS = [
+    { sym: "+", name: "плюс" },
+    { sym: "−", name: "минус" },
+    { sym: "×", name: "умножить" },
+    { sym: "÷", name: "разделить" }
+  ];
+  var selectedOps = { "+": true, "−": false, "×": false, "÷": false };
+  var count = 10;
+  var maxNum = 10;
+
+  // настройки учителя
+  var settings = {
+    sound: true,      // звук вкл/выкл
+    reveal: true,     // показывать верный ответ после ошибок
+    retype: false,    // требовать набрать верный ответ, чтобы продолжить
+    allowNeg: false   // разрешить отрицательные числа (в вычитании)
+  };
+
+  var game = null;
+  var app = document.getElementById("app");
+
+  // ---------- доступ по лицензии (Supabase) ----------
+  var LICENSE = {
+    url: "https://mghjsristvlsmwrzwwmw.supabase.co",
+    key: "sb_publishable_zHi3smsYkXv_ODUSXyylbg_SOAbWO0f"
+  };
+  var currentStudent = null;
+
+  function deviceId() {
+    var id = localStorage.getItem("mg_device");
+    if (!id) {
+      id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
+            : "d-" + Date.now() + "-" + Math.random().toString(36).slice(2);
+      localStorage.setItem("mg_device", id);
+    }
+    return id;
+  }
+
+  function verifyCode(code, cb) {
+    fetch(LICENSE.url + "/functions/v1/verify-license", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "apikey": LICENSE.key, "Authorization": "Bearer " + LICENSE.key },
+      body: JSON.stringify({ code: code, device_id: deviceId() })
+    }).then(function (r) { return r.json(); })
+      .then(cb)
+      .catch(function () { cb({ ok: false, reason: "network" }); });
+  }
+
+  function reasonText(res) {
+    switch (res.reason) {
+      case "not_found":    return "Код не найден. Проверь правильность.";
+      case "inactive":     return "Код отключён учителем.";
+      case "expired":      return "Срок действия кода истёк.";
+      case "device_limit": return "Код уже используется на другом устройстве (лимит " + (res.max_devices||1) + ").";
+      case "network":      return "Нет связи с сервером. Проверь интернет.";
+      default:             return "Доступ запрещён.";
+    }
+  }
+
+  function renderLoading(text) {
+    app.innerHTML = '<div class="card" style="text-align:center">' +
+      '<div class="title">🧮 Математика</div>' +
+      '<div class="spinner"></div>' +
+      '<div class="subtitle">' + (text || "Проверяем доступ…") + '</div></div>';
+  }
+
+  function renderGate(message) {
+    document.onkeydown = null;
+    var saved = localStorage.getItem("mg_code") || "";
+    app.innerHTML =
+      '<div class="card">' +
+        '<div class="title">🔒 Вход в игру</div>' +
+        '<div class="subtitle">Введи код, который дал учитель</div>' +
+        '<input id="codeInput" class="code-input" maxlength="6" autocomplete="off" ' +
+          'placeholder="КОД" value="' + saved + '">' +
+        (message ? '<div class="gate-msg">' + message + '</div>' : '<div class="gate-msg">&nbsp;</div>') +
+        '<button class="big-btn" id="enterBtn">Войти ▶</button>' +
+      '</div>';
+    var inp = document.getElementById("codeInput");
+    inp.addEventListener("input", function () { inp.value = inp.value.toUpperCase().replace(/[^A-Z0-9]/g, ""); });
+    inp.focus();
+    function go() {
+      var code = inp.value.trim().toUpperCase();
+      if (!code) return;
+      sndTap(); renderLoading("Проверяем код…");
+      verifyCode(code, function (res) {
+        if (res.ok) {
+          localStorage.setItem("mg_code", code);
+          currentStudent = res.student_name || null;
+          sndOk(); renderStart();
+        } else {
+          if (res.reason === "not_found" || res.reason === "inactive" || res.reason === "device_limit") {
+            localStorage.removeItem("mg_code");
+          }
+          renderGate(reasonText(res));
+        }
+      });
+    }
+    document.getElementById("enterBtn").addEventListener("click", go);
+    inp.addEventListener("keydown", function (e) { if (e.key === "Enter") go(); });
+  }
+
+  function boot() {
+    var saved = localStorage.getItem("mg_code");
+    if (saved) {
+      renderLoading();
+      verifyCode(saved, function (res) {
+        if (res.ok) { currentStudent = res.student_name || null; renderStart(); }
+        else { renderGate(reasonText(res)); }
+      });
+    } else {
+      renderGate("");
+    }
+  }
+
+  // ---------- звук ----------
+  var actx = null;
+  function ac() {
+    if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+    if (actx && actx.state === "suspended") actx.resume();
+    return actx;
+  }
+  function beep(freq, dur, type, vol) {
+    if (!settings.sound) return;
+    var c = ac(); if (!c) return;
+    var o = c.createOscillator(), g = c.createGain();
+    o.type = type || "sine";
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(vol || 0.18, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + dur);
+    o.connect(g); g.connect(c.destination);
+    o.start(); o.stop(c.currentTime + dur);
+  }
+  function sndTap()   { beep(520, 0.07, "square", 0.09); }
+  function sndOk()    { beep(660, 0.12, "sine", 0.18); setTimeout(function(){ beep(880,0.18,"sine",0.18); }, 110); }
+  function sndBad()   { beep(200, 0.22, "sawtooth", 0.15); }
+  function sndReveal(){ beep(330, 0.15, "triangle", 0.16); setTimeout(function(){ beep(262,0.25,"triangle",0.16); },140);}
+  function sndWin()   { [523,659,784,1047,1319].forEach(function(f,i){ setTimeout(function(){ beep(f,0.2,"sine",0.18); }, i*130); }); }
+
+  // ---------- генерация ----------
+  function rnd(n) { return Math.floor(Math.random() * n); }
+  function makeProblem() {
+    var avail = OPS.filter(function (o) { return selectedOps[o.sym]; });
+    var op = avail[rnd(avail.length)].sym;
+    var a, b, ans;
+    if (op === "+") { a = rnd(maxNum + 1); b = rnd(maxNum + 1); ans = a + b; }
+    else if (op === "−") {
+      if (settings.allowNeg) { a = rnd(maxNum + 1); b = rnd(maxNum + 1); ans = a - b; }
+      else { a = rnd(maxNum + 1); b = rnd(a + 1); ans = a - b; }
+    }
+    else if (op === "×") { a = rnd(maxNum + 1); b = rnd(maxNum + 1); ans = a * b; }
+    else { b = 1 + rnd(maxNum); ans = rnd(maxNum + 1); a = b * ans; }
+    return { a: a, b: b, op: op, ans: ans };
+  }
+
+  // ---------- старт ----------
+  function renderStart() {
+    document.onkeydown = null;
+    var opsHtml = OPS.map(function (o) {
+      return '<div class="chip op ' + (selectedOps[o.sym] ? "on" : "") + '" data-op="' + o.sym + '">' + o.sym + "</div>";
+    }).join("");
+    var counts = [5, 10, 15, 20];
+    var countHtml = counts.map(function (c) {
+      return '<div class="chip small count ' + (c === count ? "on" : "") + '" data-count="' + c + '">' + c + "</div>";
+    }).join("");
+    var ranges = [{v:10,t:"до 10"},{v:20,t:"до 20"},{v:100,t:"до 100"}];
+    var rangeHtml = ranges.map(function (r) {
+      return '<div class="chip small range-c ' + (r.v === maxNum ? "on" : "") + '" data-max="' + r.v + '">' + r.t + "</div>";
+    }).join("");
+
+    function sw(key) { return '<span class="switch ' + (settings[key] ? "on" : "") + '" data-sw="' + key + '"></span>'; }
+
+    app.innerHTML =
+      '<div class="card">' +
+        '<div class="title">🧮 Математика</div>' +
+        '<div class="subtitle">' + (currentStudent ? "Привет, " + currentStudent + "! 👋" : "Тренируем счёт играя!") +
+          ' <a href="#" id="logoutLink" class="logout">сменить код</a></div>' +
+        '<div class="label">✏️ Действия <small>(минимум одно)</small></div>' +
+        '<div class="grid ops">' + opsHtml + '</div>' +
+        '<div class="label">🔢 Сколько примеров</div>' +
+        '<div class="grid counts">' + countHtml + '</div>' +
+        '<div class="label">📏 Числа</div>' +
+        '<div class="grid range">' + rangeHtml + '</div>' +
+
+        '<div class="teacher-toggle" id="tToggle">⚙️ Настройки учителя <span class="arr">▾</span></div>' +
+        '<div class="teacher-panel" id="tPanel">' +
+          '<div class="switch-row"><div class="txt">🔊 Звук<small>Звуки кнопок и ответов</small></div>' + sw("sound") + '</div>' +
+          '<div class="switch-row"><div class="txt">👀 Показывать верный ответ<small>После 2 ошибок показать правильный</small></div>' + sw("reveal") + '</div>' +
+          '<div class="switch-row"><div class="txt">⌨️ Повторить правильный<small>Набрать верный ответ, чтобы продолжить</small></div>' + sw("retype") + '</div>' +
+          '<div class="switch-row"><div class="txt">➖ Отрицательные числа<small>Разрешить ответы меньше нуля</small></div>' + sw("allowNeg") + '</div>' +
+        '</div>' +
+
+        '<button class="big-btn" id="startBtn">Начать! 🚀</button>' +
+      '</div>';
+
+    [].forEach.call(app.querySelectorAll(".op"), function (el) {
+      el.addEventListener("click", function () {
+        sndTap();
+        var op = el.getAttribute("data-op");
+        var on = [].filter.call(app.querySelectorAll(".op"), function (x) { return x.classList.contains("on"); });
+        if (selectedOps[op] && on.length === 1) { el.classList.remove("nope"); void el.offsetWidth; el.classList.add("nope"); return; }
+        selectedOps[op] = !selectedOps[op];
+        el.classList.toggle("on", selectedOps[op]);
+      });
+    });
+    [].forEach.call(app.querySelectorAll(".count"), function (el) {
+      el.addEventListener("click", function () {
+        sndTap(); count = parseInt(el.getAttribute("data-count"), 10);
+        [].forEach.call(app.querySelectorAll(".count"), function (x) { x.classList.remove("on"); });
+        el.classList.add("on");
+      });
+    });
+    [].forEach.call(app.querySelectorAll(".range-c"), function (el) {
+      el.addEventListener("click", function () {
+        sndTap(); maxNum = parseInt(el.getAttribute("data-max"), 10);
+        [].forEach.call(app.querySelectorAll(".range-c"), function (x) { x.classList.remove("on"); });
+        el.classList.add("on");
+      });
+    });
+
+    // настройки учителя
+    var tToggle = document.getElementById("tToggle");
+    var tPanel = document.getElementById("tPanel");
+    tToggle.addEventListener("click", function () {
+      sndTap(); tToggle.classList.toggle("open"); tPanel.classList.toggle("open");
+    });
+    function refreshSwitches() {
+      [].forEach.call(app.querySelectorAll(".switch"), function (s) {
+        var k = s.getAttribute("data-sw");
+        s.classList.toggle("on", !!settings[k]);
+        // повтор имеет смысл только если показываем ответ
+        if (k === "retype") s.classList.toggle("disabled", !settings.reveal);
+      });
+    }
+    [].forEach.call(app.querySelectorAll(".switch"), function (s) {
+      s.addEventListener("click", function () {
+        var k = s.getAttribute("data-sw");
+        settings[k] = !settings[k];
+        if (k === "reveal" && !settings.reveal) settings.retype = false;
+        sndTap(); refreshSwitches();
+      });
+    });
+    refreshSwitches();
+
+    document.getElementById("startBtn").addEventListener("click", function () { ac(); sndTap(); startGame(); });
+
+    var lg = document.getElementById("logoutLink");
+    if (lg) lg.addEventListener("click", function (e) {
+      e.preventDefault(); sndTap();
+      localStorage.removeItem("mg_code"); currentStudent = null; renderGate("");
+    });
+  }
+
+  // ---------- игра ----------
+  function startGame() {
+    game = { index: 0, problems: [], history: [], current: null, attempts: 0, input: "", neg:false, locked: false, retypeMode:false };
+    for (var i = 0; i < count; i++) game.problems.push(makeProblem());
+    nextProblem();
+  }
+  function nextProblem() {
+    if (game.index >= game.problems.length) { renderResults(); return; }
+    game.current = game.problems[game.index];
+    game.attempts = 0; game.input = ""; game.neg = false; game.locked = false; game.retypeMode = false;
+    renderGame();
+  }
+
+  function fmtInput() { return (game.neg ? "−" : "") + game.input; }
+
+  function renderGame() {
+    var p = game.current;
+    var pct = Math.round(game.index / game.problems.length * 100);
+
+    var bottomRow = settings.allowNeg
+      ? '<button class="key del" data-k="del">⌫</button>' +
+        '<button class="key" data-k="0">0</button>' +
+        '<button class="key sign" data-k="sign">±</button>' +
+        '<button class="key enter" data-k="enter" style="grid-column:1/4">✓ Проверить</button>'
+      : '<button class="key del" data-k="del">⌫</button>' +
+        '<button class="key" data-k="0">0</button>' +
+        '<button class="key enter" data-k="enter">✓</button>';
+
+    app.innerHTML =
+      '<div class="card">' +
+        '<button class="close-btn" id="closeBtn" title="Выйти из теста">✕</button>' +
+        '<div class="topbar">' +
+          '<span class="pill">Пример ' + (game.index + 1) + ' / ' + game.problems.length + '</span>' +
+          '<span class="hearts" id="hearts">❤️❤️</span>' +
+        '</div>' +
+        '<div class="pbar"><i style="width:' + pct + '%"></i></div>' +
+        '<div class="question">' + p.a + ' ' + p.op + ' ' + p.b + ' = ?</div>' +
+        '<div class="answer-box" id="ansBox">&nbsp;</div>' +
+        '<div class="feedback" id="fb">&nbsp;</div>' +
+        '<div class="pad" id="pad">' +
+          [1,2,3,4,5,6,7,8,9].map(function (n) { return '<button class="key" data-k="' + n + '">' + n + '</button>'; }).join('') +
+          bottomRow +
+        '</div>' +
+      '</div>';
+
+    var box = document.getElementById("ansBox");
+    var pad = document.getElementById("pad");
+
+    pad.addEventListener("click", function (e) {
+      var btn = e.target.closest(".key");
+      if (!btn || game.locked) return;
+      var k = btn.getAttribute("data-k");
+      if (k === "del") { sndTap(); game.input = game.input.slice(0, -1); if(!game.input) game.neg=false; box.innerHTML = fmtInput() || "&nbsp;"; }
+      else if (k === "sign") { sndTap(); game.neg = !game.neg; box.innerHTML = fmtInput() || (game.neg ? "−" : "&nbsp;"); }
+      else if (k === "enter") { submitAnswer(); }
+      else { sndTap(); if (game.input.length < 4) game.input += k; box.innerHTML = fmtInput() || "&nbsp;"; }
+    });
+
+    document.getElementById("closeBtn").addEventListener("click", function () { sndTap(); confirmExit(); });
+
+    document.onkeydown = function (e) {
+      if (e.key === "Escape") { confirmExit(); return; }
+      if (game.locked) return;
+      if (e.key >= "0" && e.key <= "9") { if (game.input.length<4){game.input += e.key; box.innerHTML=fmtInput(); sndTap();} }
+      else if (e.key === "-" && settings.allowNeg) { game.neg=!game.neg; box.innerHTML=fmtInput()||(game.neg?"−":"&nbsp;"); sndTap(); }
+      else if (e.key === "Backspace") { game.input = game.input.slice(0,-1); if(!game.input) game.neg=false; box.innerHTML=fmtInput()||"&nbsp;"; sndTap(); }
+      else if (e.key === "Enter") { submitAnswer(); }
+    };
+  }
+
+  function submitAnswer() {
+    if (game.locked || game.input === "") return;
+    var p = game.current;
+    var val = (game.neg ? -1 : 1) * parseInt(game.input, 10);
+    var box = document.getElementById("ansBox");
+    var fb = document.getElementById("fb");
+
+    // режим повторного ввода правильного ответа
+    if (game.retypeMode) {
+      if (val === p.ans) {
+        game.locked = true; sndOk();
+        box.classList.remove("bad"); box.classList.add("ok");
+        fb.className = "feedback ok"; fb.textContent = "Отлично, запомнили! 👍";
+        advance();
+      } else {
+        sndBad(); box.classList.add("bad");
+        setTimeout(function(){ box.classList.remove("bad"); }, 400);
+        game.input=""; game.neg=false;
+        setTimeout(function(){ box.innerHTML = "&nbsp;"; }, 350);
+      }
+      return;
+    }
+
+    if (val === p.ans) {
+      game.locked = true; sndOk();
+      box.classList.add("ok");
+      fb.className = "feedback ok"; fb.textContent = "Правильно! 🎉";
+      game.history.push({ a:p.a, b:p.b, op:p.op, ans:p.ans, got:val, correct:true, attempt:game.attempts+1 });
+      advance();
+    } else {
+      game.attempts++; sndBad();
+      box.classList.add("bad");
+      setTimeout(function(){ box.classList.remove("bad"); }, 400);
+      if (game.attempts < 2) {
+        fb.className = "feedback bad"; fb.textContent = "Почти! Попробуй ещё раз 🙂";
+        game.input = ""; game.neg = false;
+        var h = document.getElementById("hearts"); if (h) h.textContent = "❤️🤍";
+        setTimeout(function(){ box.innerHTML = "&nbsp;"; }, 350);
+      } else {
+        // вторая ошибка — записываем неверный ответ
+        game.history.push({ a:p.a, b:p.b, op:p.op, ans:p.ans, got:val, correct:false, attempt:2 });
+        var h2 = document.getElementById("hearts"); if (h2) h2.textContent = "🤍🤍";
+        if (settings.reveal) {
+          sndReveal();
+          fb.className = "feedback bad";
+          fb.innerHTML = "Верный ответ: <b style='color:var(--green)'>" + p.ans + "</b>";
+          if (settings.retype) {
+            // показать ответ, затем попросить набрать его
+            box.classList.remove("bad"); box.classList.add("ok"); box.innerHTML = p.ans;
+            setTimeout(function () {
+              game.retypeMode = true; game.locked = false; game.input = ""; game.neg = false;
+              box.classList.remove("ok"); box.innerHTML = "&nbsp;";
+              fb.className = "feedback"; fb.textContent = "Набери верный ответ и нажми ✓";
+            }, 1400);
+          } else {
+            game.locked = true;
+            box.classList.remove("bad"); box.classList.add("ok"); box.innerHTML = p.ans;
+            advance(1600);
+          }
+        } else {
+          // не показываем ответ
+          game.locked = true;
+          sndReveal();
+          fb.className = "feedback bad"; fb.textContent = "Неверно ❌";
+          advance(1100);
+        }
+      }
+    }
+  }
+  function advance(delay) {
+    setTimeout(function () { game.index++; nextProblem(); }, delay || 850);
+  }
+
+  // ---------- выход из теста ----------
+  function confirmExit() {
+    if (document.getElementById("exitOverlay")) return;
+    var ov = document.createElement("div");
+    ov.className = "overlay"; ov.id = "exitOverlay";
+    ov.innerHTML =
+      '<div class="modal">' +
+        '<div style="font-size:42px">🚪</div>' +
+        '<h3>Выйти из теста?</h3>' +
+        '<p>Результат не сохранится. Вернёмся на главный экран.</p>' +
+        '<div class="modal-btns">' +
+          '<button class="mbtn stay" id="mStay">Остаться</button>' +
+          '<button class="mbtn leave" id="mLeave">Выйти</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(ov);
+    document.getElementById("mStay").addEventListener("click", function () { sndTap(); ov.remove(); });
+    document.getElementById("mLeave").addEventListener("click", function () { sndTap(); ov.remove(); game = null; renderStart(); });
+    ov.addEventListener("click", function (e) { if (e.target === ov) ov.remove(); });
+  }
+
+  // ---------- конфетти ----------
+  function confetti() {
+    var colors = ["#ff7a59","#7c5cff","#2ecc71","#ffd36e","#ff8fb1","#7afcff"];
+    for (var i = 0; i < 80; i++) {
+      var c = document.createElement("div");
+      c.className = "confetti";
+      c.style.left = Math.random() * 100 + "vw";
+      c.style.background = colors[rnd(colors.length)];
+      c.style.animationDuration = (1.8 + Math.random() * 1.6) + "s";
+      c.style.animationDelay = (Math.random() * 0.5) + "s";
+      c.style.transform = "rotate(" + rnd(360) + "deg)";
+      document.body.appendChild(c);
+      setTimeout((function(el){ return function(){ el.remove(); }; })(c), 4000);
+    }
+  }
+
+  // ---------- результаты ----------
+  function renderResults() {
+    document.onkeydown = null;
+    var total = game.history.length;
+    var ok = game.history.filter(function (h) { return h.correct; }).length;
+    var wrong = total - ok;
+    var pct = total ? Math.round(ok / total * 100) : 0;
+
+    var stroke = pct >= 80 ? "#2ecc71" : pct >= 50 ? "#ffb300" : "#ff5a5f";
+    var emoji = pct >= 80 ? "🏆" : pct >= 50 ? "🙂" : "💪";
+    var msg   = pct >= 80 ? "Превосходно!" : pct >= 50 ? "Хорошая работа!" : "Тренируйся ещё!";
+
+    var R = 70, C = 2 * Math.PI * R;
+    var offset = C * (1 - pct / 100);
+
+    var rows = game.history.map(function (h, idx) {
+      var cls = h.correct ? "ok" : "bad";
+      var res = h.correct ? "✅" : "❌";
+      var got = h.correct
+        ? "✔ <b class='right'>" + h.got + "</b>" + (h.attempt===2 ? "<br>со 2-й попытки" : "")
+        : "ты: <b class='wrong'>" + h.got + "</b><br>верно: <b class='right'>" + h.ans + "</b>";
+      return '<div class="hrow ' + cls + '" style="animation-delay:' + (idx*40) + 'ms">' +
+        '<span class="res">' + res + '</span>' +
+        '<span class="expr">' + h.a + ' ' + h.op + ' ' + h.b + ' = ' + h.ans + '</span>' +
+        '<span class="got">' + got + '</span></div>';
+    }).join("");
+
+    app.innerHTML =
+      '<div class="card">' +
+        '<div class="mascot">' + emoji + '</div>' +
+        '<h2>' + msg + '</h2>' +
+        '<div class="ring-wrap">' +
+          '<svg width="180" height="180" viewBox="0 0 180 180">' +
+            '<circle class="ring-bg" cx="90" cy="90" r="' + R + '"></circle>' +
+            '<circle class="ring-fg" id="ringFg" cx="90" cy="90" r="' + R + '" stroke="' + stroke + '" stroke-dasharray="' + C + '" stroke-dashoffset="' + C + '"></circle>' +
+            '<text class="ring-text" x="90" y="90" text-anchor="middle" dominant-baseline="central">' +
+              '<tspan class="pct-num" fill="' + stroke + '" x="90" dy="-2">' + pct + '%</tspan>' +
+              '<tspan x="90" dy="26" font-size="13" fill="#9aa3b8">верных</tspan>' +
+            '</text>' +
+          '</svg>' +
+        '</div>' +
+        '<div class="stat-row">' +
+          '<div class="stat good"><b>' + ok + '</b><span>правильно</span></div>' +
+          '<div class="stat bad"><b>' + wrong + '</b><span>с ошибкой</span></div>' +
+          '<div class="stat"><b>' + total + '</b><span>всего</span></div>' +
+        '</div>' +
+        '<div class="label">📜 История решений</div>' +
+        '<div class="history">' + rows + '</div>' +
+        '<button class="big-btn green" id="againBtn">Играть снова 🔄</button>' +
+      '</div>';
+
+    setTimeout(function(){ var fg = document.getElementById("ringFg"); if (fg) fg.style.strokeDashoffset = offset; }, 120);
+    if (pct >= 80) { sndWin(); confetti(); } else sndOk();
+    document.getElementById("againBtn").addEventListener("click", function () { sndTap(); renderStart(); });
+  }
+
+  boot();
+})();
+</script>
+</body>
+</html>

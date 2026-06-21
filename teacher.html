@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Панель учителя · Математика</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  :root { --purple:#7c5cff; --green:#2ecc71; --red:#ff5a5f; --ink:#3a3a5a; --muted:#9aa3b8; }
+  body {
+    margin:0; padding:24px 14px 60px; min-height:100vh;
+    font-family:'Fredoka',system-ui,sans-serif; color:var(--ink);
+    background:linear-gradient(160deg,#a18cd1,#6dd5fa 60%,#2980ff);
+  }
+  .wrap { max-width:880px; margin:0 auto; }
+  h1 { font-family:'Baloo 2'; font-weight:800; text-align:center; color:#fff; margin:4px 0 18px; }
+  .panel { background:#fff; border-radius:24px; box-shadow:0 18px 44px rgba(40,30,90,.3); padding:22px; margin-bottom:18px; }
+  .panel h2 { font-family:'Baloo 2'; margin:0 0 14px; font-size:20px; }
+  label { display:block; font-size:13px; font-weight:600; color:var(--muted); margin:10px 0 4px; }
+  input, select {
+    width:100%; font-family:'Fredoka'; font-size:16px; padding:12px 14px;
+    border:2px solid #e7ebf5; border-radius:14px; outline:none; background:#f6f8fd;
+  }
+  input:focus, select:focus { border-color:var(--purple); background:#fff; }
+  .row { display:flex; gap:12px; flex-wrap:wrap; }
+  .row > div { flex:1; min-width:140px; }
+  .btn {
+    border:none; cursor:pointer; font-family:'Baloo 2'; font-weight:700; font-size:16px;
+    padding:13px 18px; border-radius:14px; color:#fff;
+    background:linear-gradient(120deg,#ff7a59,#ff5e7e); margin-top:16px;
+  }
+  .btn.full { width:100%; }
+  .btn.purple { background:linear-gradient(120deg,var(--purple),#9d7bff); }
+  .btn.sm { font-size:13px; padding:7px 11px; margin:0; border-radius:10px; }
+  .btn.gray { background:#eef2fb; color:var(--ink); }
+  .btn.red { background:linear-gradient(120deg,var(--red),#e0383d); }
+  .btn.green { background:linear-gradient(120deg,var(--green),#27ae60); }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th { text-align:left; color:var(--muted); font-size:12px; font-weight:600; padding:8px; border-bottom:2px solid #eef2fb; }
+  td { padding:10px 8px; border-bottom:1px solid #f1f4fa; vertical-align:middle; }
+  .code-cell { font-family:'Baloo 2'; font-weight:800; font-size:18px; letter-spacing:2px; color:var(--purple); cursor:pointer; }
+  .code-cell:hover { text-decoration:underline; }
+  .badge { display:inline-block; font-size:11px; font-weight:700; padding:3px 9px; border-radius:999px; }
+  .badge.on { background:#e9fdf1; color:var(--green); }
+  .badge.off { background:#fff0f0; color:var(--red); }
+  .devs { font-weight:700; }
+  .devs.over { color:var(--red); }
+  .acts { display:flex; gap:6px; flex-wrap:wrap; }
+  .muted { color:var(--muted); font-size:13px; }
+  .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--ink); color:#fff;
+    padding:12px 20px; border-radius:14px; font-weight:600; opacity:0; transition:opacity .25s; z-index:50; }
+  .toast.show { opacity:1; }
+  .login-box { max-width:420px; margin:60px auto; }
+  .hidden { display:none !important; }
+  .hint { font-size:12px; color:var(--muted); margin-top:6px; }
+  .new-code { background:#e9fdf1; border:2px dashed var(--green); border-radius:14px; padding:14px; text-align:center; margin-top:14px; }
+  .new-code b { font-family:'Baloo 2'; font-size:28px; letter-spacing:4px; color:var(--green); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>👩‍🏫 Панель учителя</h1>
+
+  <!-- вход -->
+  <div id="loginView" class="panel login-box">
+    <h2>Вход</h2>
+    <label>Секретный ключ учителя</label>
+    <input id="adminKey" type="password" placeholder="ключ доступа">
+    <button class="btn full purple" id="loginBtn">Войти</button>
+    <div class="hint">Ключ доступа выдан отдельно и хранится только в этом браузере. Никому не передавайте и не публикуйте его.</div>
+  </div>
+
+  <!-- рабочая область -->
+  <div id="appView" class="hidden">
+    <div class="panel">
+      <h2>➕ Новый код для ученика</h2>
+      <div class="row">
+        <div><label>Имя ученика</label><input id="nName" placeholder="Например, Маша"></div>
+        <div><label>Действует до</label><input id="nUntil" type="date"></div>
+      </div>
+      <div class="row">
+        <div><label>Сколько устройств</label>
+          <select id="nDevices"><option value="1">1 (один телефон/ПК)</option><option value="2">2</option><option value="3">3</option></select>
+        </div>
+        <div><label>Заметка (необязательно)</label><input id="nNote" placeholder="оплачен месяц, и т.п."></div>
+      </div>
+      <button class="btn" id="createBtn">Создать код</button>
+      <div id="newCodeBox" class="new-code hidden"></div>
+    </div>
+
+    <div class="panel">
+      <h2>📋 Коды учеников <button class="btn sm gray" id="refreshBtn" style="float:right">Обновить</button></h2>
+      <div id="listWrap"><div class="muted">Загрузка…</div></div>
+    </div>
+  </div>
+</div>
+<div id="toast" class="toast"></div>
+
+<script>
+(function () {
+  "use strict";
+  var CONF = {
+    url: "https://mghjsristvlsmwrzwwmw.supabase.co",
+    key: "sb_publishable_zHi3smsYkXv_ODUSXyylbg_SOAbWO0f"
+  };
+  var adminKey = sessionStorage.getItem("mg_admin_key") || "";
+
+  function toast(msg) {
+    var t = document.getElementById("toast");
+    t.textContent = msg; t.classList.add("show");
+    setTimeout(function () { t.classList.remove("show"); }, 1800);
+  }
+
+  function api(action, payload) {
+    return fetch(CONF.url + "/functions/v1/admin", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": CONF.key,
+        "Authorization": "Bearer " + CONF.key,
+        "x-admin-key": adminKey
+      },
+      body: JSON.stringify(Object.assign({ action: action }, payload || {}))
+    }).then(function (r) { return r.json(); });
+  }
+
+  function fmtDate(s) {
+    if (!s) return "бессрочно";
+    var d = new Date(s);
+    return d.toLocaleDateString("ru-RU");
+  }
+  function isExpired(s) { return s && new Date(s).getTime() < Date.now(); }
+
+  // ---------- вход ----------
+  function showApp() {
+    document.getElementById("loginView").classList.add("hidden");
+    document.getElementById("appView").classList.remove("hidden");
+    loadList();
+  }
+  document.getElementById("loginBtn").addEventListener("click", tryLogin);
+  document.getElementById("adminKey").addEventListener("keydown", function (e) { if (e.key === "Enter") tryLogin(); });
+  function tryLogin() {
+    adminKey = document.getElementById("adminKey").value.trim();
+    if (!adminKey) return;
+    api("list").then(function (res) {
+      if (res.ok) { sessionStorage.setItem("mg_admin_key", adminKey); showApp(); }
+      else toast("Неверный ключ");
+    }).catch(function () { toast("Нет связи с сервером"); });
+  }
+  if (adminKey) { api("list").then(function (res) { if (res.ok) showApp(); }); }
+
+  // ---------- создание ----------
+  document.getElementById("createBtn").addEventListener("click", function () {
+    var name = document.getElementById("nName").value.trim();
+    if (!name) { toast("Введите имя ученика"); return; }
+    var untilVal = document.getElementById("nUntil").value;
+    // дата включительно — код живёт до конца выбранного дня
+    var until = untilVal ? new Date(untilVal + "T23:59:59").toISOString() : null;
+    var devices = document.getElementById("nDevices").value;
+    var note = document.getElementById("nNote").value.trim() || null;
+    api("create", { student_name: name, valid_until: until, max_devices: devices, note: note }).then(function (res) {
+      if (res.ok) {
+        var box = document.getElementById("newCodeBox");
+        box.classList.remove("hidden");
+        box.innerHTML = 'Код для <b style="color:var(--ink);font-size:16px;letter-spacing:0">' + name +
+          '</b>:<br><b>' + res.license.code + '</b><br><span class="muted">Скопируйте и отдайте ученику</span>';
+        document.getElementById("nName").value = "";
+        document.getElementById("nNote").value = "";
+        loadList();
+        toast("Код создан: " + res.license.code);
+      } else { toast("Ошибка: " + (res.error || "")); }
+    });
+  });
+
+  // ---------- список ----------
+  document.getElementById("refreshBtn").addEventListener("click", loadList);
+  function loadList() {
+    var wrap = document.getElementById("listWrap");
+    api("list").then(function (res) {
+      if (!res.ok) { wrap.innerHTML = '<div class="muted">Ошибка загрузки</div>'; return; }
+      if (!res.licenses.length) { wrap.innerHTML = '<div class="muted">Пока нет ни одного кода. Создайте первый выше ☝️</div>'; return; }
+      var rows = res.licenses.map(function (l) {
+        var expired = isExpired(l.valid_until);
+        var active = l.is_active && !expired;
+        var over = l.device_count > l.max_devices;
+        var status = !l.is_active ? '<span class="badge off">отозван</span>'
+                    : expired ? '<span class="badge off">истёк</span>'
+                    : '<span class="badge on">активен</span>';
+        return '<tr>' +
+          '<td class="code-cell" data-copy="' + l.code + '" title="Скопировать">' + l.code + '</td>' +
+          '<td><b>' + esc(l.student_name) + '</b>' + (l.note ? '<br><span class="muted">' + esc(l.note) + '</span>' : '') + '</td>' +
+          '<td>' + status + '</td>' +
+          '<td class="devs ' + (over ? "over" : "") + '">' + l.device_count + ' / ' + l.max_devices + '</td>' +
+          '<td>' + fmtDate(l.valid_until) + '</td>' +
+          '<td><div class="acts">' +
+            (l.is_active
+              ? '<button class="btn sm red" data-act="revoke" data-id="' + l.id + '">Отозвать</button>'
+              : '<button class="btn sm green" data-act="activate" data-id="' + l.id + '">Включить</button>') +
+            '<button class="btn sm gray" data-act="reset" data-id="' + l.id + '" title="Сбросить привязку устройств">Сброс устр.</button>' +
+            '<button class="btn sm gray" data-act="delete" data-id="' + l.id + '">Удалить</button>' +
+          '</div></td>' +
+        '</tr>';
+      }).join("");
+      wrap.innerHTML =
+        '<div style="overflow-x:auto"><table><thead><tr>' +
+          '<th>Код</th><th>Ученик</th><th>Статус</th><th>Устройства</th><th>До</th><th>Действия</th>' +
+        '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+
+      [].forEach.call(wrap.querySelectorAll(".code-cell"), function (c) {
+        c.addEventListener("click", function () {
+          var code = c.getAttribute("data-copy");
+          if (navigator.clipboard) navigator.clipboard.writeText(code);
+          toast("Скопировано: " + code);
+        });
+      });
+      [].forEach.call(wrap.querySelectorAll("[data-act]"), function (b) {
+        b.addEventListener("click", function () {
+          var act = b.getAttribute("data-act"), id = b.getAttribute("data-id");
+          if (act === "delete" && !confirm("Удалить код навсегда?")) return;
+          if (act === "reset" && !confirm("Сбросить привязанные устройства? Ученик сможет войти заново на новом устройстве.")) return;
+          var map = { revoke: "revoke", activate: "activate", reset: "reset_devices", delete: "delete" };
+          api(map[act], { id: id }).then(function (r) {
+            if (r.ok) { toast("Готово"); loadList(); } else toast("Ошибка");
+          });
+        });
+      });
+    });
+  }
+
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) {
+    return { "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;" }[c]; }); }
+})();
+</script>
+</body>
+</html>
