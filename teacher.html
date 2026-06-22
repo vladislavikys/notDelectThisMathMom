@@ -133,6 +133,12 @@
     var d = new Date(s);
     return d.toLocaleDateString("ru-RU");
   }
+  function fmtPlayed(s) {
+    if (!s) return "ещё не играл";
+    var d = new Date(s);
+    return d.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "2-digit" }) +
+      " " + d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+  }
   function isExpired(s) { return s && new Date(s).getTime() < Date.now(); }
 
   // ---------- вход ----------
@@ -195,6 +201,7 @@
           '<td><b>' + esc(l.student_name) + '</b>' + (l.note ? '<br><span class="muted">' + esc(l.note) + '</span>' : '') + '</td>' +
           '<td>' + status + '</td>' +
           '<td class="devs ' + (over ? "over" : "") + '">' + l.device_count + ' / ' + l.max_devices + '</td>' +
+          '<td><b>' + (l.games_played || 0) + '</b> игр<br><span class="muted">' + fmtPlayed(l.last_played_at) + '</span></td>' +
           '<td>' + fmtDate(l.valid_until) + '</td>' +
           '<td><div class="acts">' +
             (l.is_active
@@ -207,7 +214,7 @@
       }).join("");
       wrap.innerHTML =
         '<div style="overflow-x:auto"><table><thead><tr>' +
-          '<th>Код</th><th>Ученик</th><th>Статус</th><th>Устройства</th><th>До</th><th>Действия</th>' +
+          '<th>Код</th><th>Ученик</th><th>Статус</th><th>Устройства</th><th>Активность</th><th>До</th><th>Действия</th>' +
         '</tr></thead><tbody>' + rows + '</tbody></table></div>';
 
       [].forEach.call(wrap.querySelectorAll(".code-cell"), function (c) {

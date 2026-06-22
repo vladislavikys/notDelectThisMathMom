@@ -320,6 +320,16 @@
       .catch(function () { cb({ ok: false, reason: "network" }); });
   }
 
+  function recordGame() {
+    var code = localStorage.getItem("mg_code");
+    if (!code) return;
+    fetch(LICENSE.url + "/functions/v1/record-game", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "apikey": LICENSE.key, "Authorization": "Bearer " + LICENSE.key },
+      body: JSON.stringify({ code: code, device_id: deviceId() })
+    }).catch(function () {});
+  }
+
   function reasonText(res) {
     switch (res.reason) {
       case "not_found":    return "Код не найден. Проверь правильность.";
@@ -456,7 +466,7 @@
         '<div class="label">📏 Числа</div>' +
         '<div class="grid range">' + rangeHtml + '</div>' +
 
-        '<div class="teacher-toggle" id="tToggle">⚙️ Настройки учителя <span class="arr">▾</span></div>' +
+        '<div class="teacher-toggle" id="tToggle">⚙️ Настройки <span class="arr">▾</span></div>' +
         '<div class="teacher-panel" id="tPanel">' +
           '<div class="switch-row"><div class="txt">🔊 Звук<small>Звуки кнопок и ответов</small></div>' + sw("sound") + '</div>' +
           '<div class="switch-row"><div class="txt">👀 Показывать верный ответ<small>После 2 ошибок показать правильный</small></div>' + sw("reveal") + '</div>' +
@@ -708,6 +718,7 @@
   // ---------- результаты ----------
   function renderResults() {
     document.onkeydown = null;
+    recordGame();
     var total = game.history.length;
     var ok = game.history.filter(function (h) { return h.correct; }).length;
     var wrong = total - ok;
